@@ -5,14 +5,26 @@ import (
 	"log"
 	"github.com/EmaNymton123/PocketTroubadour/controllers"
 	"flag"
+	"embed"
+	"io/fs"
 )
+
+//go:embed all:public
+var public_files embed.FS
 
 func main(){
 	var listenFlag *string = flag.String("listen", ":8080", "description adresse d'écoute")
 	flag.Parse()
+
+	public_fs, err := fs.Sub(public_files, "public")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var public_fs2 = (http.FS(public_fs))
+
 	s := &http.Server{
 		Addr:           *listenFlag,
-		Handler:        controllers.Routes(),
+		Handler:        controllers.Routes(public_fs2),
 	}
 	log.Printf("starting PocketTroubadour on %v", *listenFlag)
 	unpeucommeonveut("vous qui lisez ceci.")
